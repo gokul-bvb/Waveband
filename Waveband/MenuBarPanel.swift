@@ -1,4 +1,5 @@
 #if os(macOS)
+import ServiceManagement
 import SwiftUI
 
 /// Compact control that lives in the menu bar: current network, last results,
@@ -7,6 +8,8 @@ struct MenuBarPanel: View {
     @Environment(SignalMonitor.self) private var signal
     @Environment(SpeedTestEngine.self) private var engine
     @Environment(\.openWindow) private var openWindow
+
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -43,6 +46,27 @@ struct MenuBarPanel: View {
 
             Divider()
                 .overlay(Palette.hairline)
+
+            Toggle(isOn: $launchAtLogin) {
+                Text("Launch at login")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Palette.fog)
+            }
+            .toggleStyle(.switch)
+            .controlSize(.mini)
+            .tint(Palette.cyan)
+            .onChange(of: launchAtLogin) { _, enabled in
+                do {
+                    if enabled {
+                        try SMAppService.mainApp.register()
+                    } else {
+                        try SMAppService.mainApp.unregister()
+                    }
+                } catch {
+                    // Revert the switch if macOS refused the change.
+                    launchAtLogin = SMAppService.mainApp.status == .enabled
+                }
+            }
 
             HStack {
                 Button("Open Waveband") {

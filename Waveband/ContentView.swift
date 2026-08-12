@@ -65,13 +65,9 @@ struct ContentView: View {
         }
     }
 
+    /// The wavefield only runs during a sweep; it ramps in and out smoothly.
     private var fieldEnergy: Double {
-        if engine.isRunning { return 1 }
-        #if os(macOS)
-        return signal.isConnected ? 0.18 + 0.25 * signal.quality : 0.05
-        #else
-        return signal.isConnected ? 0.3 : 0.05
-        #endif
+        engine.isRunning ? 1 : 0
     }
 
     private var header: some View {

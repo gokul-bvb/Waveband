@@ -84,12 +84,10 @@ struct GlassCard<Content: View>: View {
     }
 }
 
-/// Standby light for the connection, breathing gently while linked.
+/// Standby light for the connection. Static by design — continuous ambient
+/// animation costs a Core Animation commit per frame even when tiny.
 struct StatusDot: View {
     let connected: Bool
-
-    @State private var breathing = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var color: Color { connected ? Palette.cyan : Palette.magenta }
 
@@ -97,14 +95,7 @@ struct StatusDot: View {
         Circle()
             .fill(color)
             .frame(width: 9, height: 9)
-            .scaleEffect(breathing ? 1.0 : 0.82)
-            .shadow(color: color.opacity(breathing ? 0.9 : 0.4), radius: breathing ? 7 : 3)
-            .onAppear {
-                guard !reduceMotion else { return }
-                withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
-                    breathing = true
-                }
-            }
+            .shadow(color: color.opacity(0.7), radius: 5)
             .accessibilityLabel(connected ? "Connected" : "Offline")
     }
 }
